@@ -3,7 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv/config";
 import tuitionsRouter from "./routes/tuitions.js";
 import usersRouter from "./routes/users.js";
-import pymentsRouter from "./routes/payments.js";
+import paymentsRouter from "./routes/payments.js";
+import statsRouter from "./routes/stats.js";
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -14,7 +15,8 @@ app.use(express.json());
 app.get("/", (req, res) => res.send( "MentorLagbe server is running" ));
 app.use(("/users", usersRouter));
 app.use("/tuitions", tuitionsRouter);
-app.use("/payments", pymentsRouter);
+app.use("/payments", paymentsRouter);
+app.use("/stats", statsRouter);
 
 
 //Rote not found
