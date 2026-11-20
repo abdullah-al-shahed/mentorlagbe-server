@@ -27,7 +27,3 @@ app.listen(port, () =>
 
 
 export default app;
-
-// app.listen(port, () => {
-//   console.log(`MentorLagbe server is running on port: ${port}`);
-// });
