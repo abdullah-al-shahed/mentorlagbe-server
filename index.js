@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv/config";
-
+import tuitionsRouter from "./routes/tuitions.js";
 
 
 const app = express();
@@ -12,6 +12,7 @@ app.use(express.json());
 
 app.get("/", (req, res) => res.send( "MentorLagbe server is running" ));
 app.use(("/users", usersRouter));
+app.use("/tuitions", tuitionsRouter);
 
 
 //Rote not found
