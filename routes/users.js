@@ -50,7 +50,7 @@ router.patch("/:id/role", verifyToken, verifyAdmin, async (req, res) => {
   }
 
   // ✅ নতুন: অ্যাডমিন নিজের রোল নিজে বদলাতে পারবে না
-  // (এটা রুটের ভেতরে থাকতে হবে, আগে ফাইলের বাইরে ছিল বলে ক্র্যাশ করত)
+  // 
   if (req.params.id === req.user.id) {
     return res.status(400).send({ message: "You cannot change your own role" });
   }

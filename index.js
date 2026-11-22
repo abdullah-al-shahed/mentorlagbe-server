@@ -34,7 +34,6 @@ app.use("/applications", applicationsRouter);
 app.use("/payments", paymentsRouter);
 app.use("/stats", statsRouter);
 
-// অজানা রুট
 app.use((req, res) => res.status(404).send({ message: "Route not found" }));
 
 app.use((err, req, res, next) => {
