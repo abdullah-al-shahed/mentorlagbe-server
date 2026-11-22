@@ -1,11 +1,21 @@
 import "dotenv/config";
 import { getCollection, COLLECTIONS } from "./config/db.js";
 
+// ---------- Demo tutors No password ----------
 const tutors = [
   { name: "Rahim Uddin", email: "rahim.tutor@example.com" },
   { name: "Nusrat Jahan", email: "nusrat.tutor@example.com" },
   { name: "Tanvir Ahmed", email: "tanvir.tutor@example.com" },
   { name: "Sadia Islam", email: "sadia.tutor@example.com" },
+];
+
+// ---------- Demo students ( No pass, Don't be login, Just see the data) ----------
+const students = [
+  { name: "Arif Hasan", email: "arif.student@example.com", phone: "01711000001" },
+  { name: "Mehnaz Akter", email: "mehnaz.student@example.com", phone: "01711000002" },
+  { name: "Sakib Rahman", email: "sakib.student@example.com", phone: "01711000003" },
+  { name: "Tasnim Jahan", email: "tasnim.student@example.com", phone: "01711000004" },
+  { name: "Rafi Chowdhury", email: "rafi.student@example.com", phone: "01711000005" },
 ];
 
 const img = (id) =>
@@ -42,7 +52,9 @@ const tuitions = base.map(([title, subject, classLevel, mode, location, monthlyF
 
 const users = await getCollection(COLLECTIONS.USERS);
 const tuitionsCol = await getCollection(COLLECTIONS.TUITIONS);
+const applicationsCol = await getCollection(COLLECTIONS.APPLICATIONS);
 
+// ---------- Tutors ----------
 for (const t of tutors) {
   await users.updateOne(
     { email: t.email },
@@ -51,8 +63,45 @@ for (const t of tutors) {
   );
 }
 
-await tuitionsCol.deleteMany({ tutorEmail: { $in: tutors.map((t) => t.email) } });
-await tuitionsCol.insertMany(tuitions);
+// ---------- Students ----------
+for (const s of students) {
+  await users.updateOne(
+    { email: s.email },
+    { $setOnInsert: { name: s.name, email: s.email, role: "student", plan: "free", phone: s.phone, bio: "", createdAt: new Date().toISOString() } },
+    { upsert: true }
+  );
+}
 
-console.log(`Seeded ${tuitions.length} tuitions`);
+// ---------- Tuitions (Previus demo data finish) ----------
+await tuitionsCol.deleteMany({ tutorEmail: { $in: tutors.map((t) => t.email) } });
+const insertedTuitions = await tuitionsCol.insertMany(tuitions);
+const tuitionIds = Object.values(insertedTuitions.insertedIds).map((id) => id.toString());
+
+// ---------- Applications (demo student- previous application data finish ) ----------
+const statuses = ["pending", "accepted", "rejected"];
+const apps = [];
+for (let i = 0; i < 8; i++) {
+  const t = tuitions[i % tuitions.length];
+  const s = students[i % students.length];
+  apps.push({
+    tuitionId: tuitionIds[i % tuitionIds.length],
+    tuitionTitle: t.title,
+    subject: t.subject,
+    monthlyFee: t.monthlyFee,
+    tutorName: t.tutorName,
+    tutorEmail: t.tutorEmail,
+    studentName: s.name,
+    studentEmail: s.email,
+    studentPhone: s.phone,
+    preferredSchedule: "Sat, Mon, Wed - 6 PM",
+    studentNote: "Looking for regular practice and feedback.",
+    status: statuses[i % statuses.length],
+    appliedAt: new Date(Date.now() - i * 3600000).toISOString(),
+  });
+}
+
+await applicationsCol.deleteMany({ studentEmail: { $in: students.map((s) => s.email) } });
+await applicationsCol.insertMany(apps);
+
+console.log(`Seeded ${tuitions.length} tuitions, ${students.length} students, ${apps.length} applications`);
 process.exit(0);
