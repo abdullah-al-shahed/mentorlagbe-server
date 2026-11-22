@@ -37,6 +37,12 @@ app.use("/stats", statsRouter);
 // অজানা রুট
 app.use((req, res) => res.status(404).send({ message: "Route not found" }));
 
+app.use((err, req, res, next) => {
+  console.error(err.message);
+  const status = err.message === "Not allowed by CORS" ? 403 : 500;
+  res.status(status).send({ message: err.message || "Server error" });
+});
+
 app.listen(port, () => console.log(`Server running on port ${port}`));
 
 export default app;

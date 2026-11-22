@@ -6,13 +6,14 @@ import {
   verifyTutor,
   verifyAdmin,
 } from "../middlewares/auth.js";
+import { validateId } from "../middlewares/validateId.js";
 
 const router = Router();
+
+router.param("id", validateId);
+
 const FREE_TUITION_LIMIT = 2;
 
-const isValidId = (id) => ObjectId.isValid(id);
-
-// regex এর স্পেশাল ক্যারেক্টার escape করি, যাতে সার্চে ক্র্যাশ না হয়
 const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // ---------- Public: approved + active tuitions (search, filter, pagination) ----------
@@ -78,11 +79,14 @@ router.get("/admin/all", verifyToken, verifyAdmin, async (req, res) => {
 
 // ---------- Public: একটা tuition এর ডিটেইলস + tutor সামারি ----------
 router.get("/:id", async (req, res) => {
-  if (!isValidId(req.params.id)) {
-    return res.status(404).send({ message: "Tuition not found" });
-  }
   const tuitions = await getCollection(COLLECTIONS.TUITIONS);
-  const tuition = await tuitions.findOne({ _id: new ObjectId(req.params.id) });
+
+  
+  const tuition = await tuitions.findOne({
+    _id: new ObjectId(req.params.id),
+    approvalStatus: "approved",
+    isActive: true,
+  });
   if (!tuition) return res.status(404).send({ message: "Tuition not found" });
 
   const users = await getCollection(COLLECTIONS.USERS);

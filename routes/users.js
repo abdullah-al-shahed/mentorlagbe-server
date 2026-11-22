@@ -2,8 +2,13 @@ import { Router } from "express";
 import { ObjectId } from "mongodb";
 import { getCollection, COLLECTIONS } from "../config/db.js";
 import { verifyToken, verifyAdmin } from "../middlewares/auth.js";
+import { validateId } from "../middlewares/validateId.js"; // ✅ নতুন
 
 const router = Router();
+
+// 
+router.param("id", validateId);
+
 const ROLES = ["student", "tutor", "admin"];
 
 // Admin: সব ইউজার
@@ -43,6 +48,13 @@ router.patch("/:id/role", verifyToken, verifyAdmin, async (req, res) => {
   if (!ROLES.includes(role)) {
     return res.status(400).send({ message: "Invalid role" });
   }
+
+  // ✅ নতুন: অ্যাডমিন নিজের রোল নিজে বদলাতে পারবে না
+  // (এটা রুটের ভেতরে থাকতে হবে, আগে ফাইলের বাইরে ছিল বলে ক্র্যাশ করত)
+  if (req.params.id === req.user.id) {
+    return res.status(400).send({ message: "You cannot change your own role" });
+  }
+
   const users = await getCollection(COLLECTIONS.USERS);
   const result = await users.updateOne(
     { _id: new ObjectId(req.params.id) },

@@ -6,8 +6,12 @@ import {
   verifyStudent,
   verifyTutor,
 } from "../middlewares/auth.js";
+import { validateId } from "../middlewares/validateId.js"; // ✅ নতুন
 
 const router = Router();
+
+// 
+router.param("id", validateId);
 
 // ---------- Student: apply ----------
 router.post("/", verifyToken, verifyStudent, async (req, res) => {
@@ -71,6 +75,7 @@ router.get("/mine", verifyToken, verifyStudent, async (req, res) => {
 });
 
 // ---------- Student: এই tuition এ আগে apply করেছে কিনা ----------
+// 
 router.get("/check/:tuitionId", verifyToken, verifyStudent, async (req, res) => {
   const applications = await getCollection(COLLECTIONS.APPLICATIONS);
   const existing = await applications.findOne({
